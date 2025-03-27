@@ -165,285 +165,53 @@ if uploaded_file is not None:
     #     result_img = Image.open(result_path)
     #     st.image(result_img, caption=f"Sample Result: {detection_result}", use_container_width=True)
     
-# Pre-convert feature maps, combined feature, and gradcam to base64 for use in the modal
-feature_map1_data = ""
-feature_map2_data = ""
-combined_feature_data = ""
-gradcam_data = ""
-
-feature_map1_path = os.path.join(sample_dir, "feature_map1.png")
-if os.path.exists(feature_map1_path):
-    with open(feature_map1_path, "rb") as f:
-        feature_map1_data = base64.b64encode(f.read()).decode("utf-8")
-
-feature_map2_path = os.path.join(sample_dir, "feature_map2.png")
-if os.path.exists(feature_map2_path):
-    with open(feature_map2_path, "rb") as f:
-        feature_map2_data = base64.b64encode(f.read()).decode("utf-8")
-
-combined_feature_path = os.path.join(sample_dir, "combined_feature.png")
-if os.path.exists(combined_feature_path):
-    with open(combined_feature_path, "rb") as f:
-        combined_feature_data = base64.b64encode(f.read()).decode("utf-8")
-
-gradcam_path = os.path.join(sample_dir, "gradcam.png")
-if os.path.exists(gradcam_path):
-    with open(gradcam_path, "rb") as f:
-        gradcam_data = base64.b64encode(f.read()).decode("utf-8")
-
-if st.button("Want to know how the model detected it?"):
-    modal = Modal("Detection Process Details", key="detection_modal")
-    with modal.container():
-        st.markdown("### How the Model Detects Deepfakes")
-        st.write("Watch the detection process unfold step by step:")
-
-        # Create a placeholder for the dynamic process
-        process_placeholder = st.empty()
-
-        # Step 1: Show the input image
-        with process_placeholder.container():
-            st.markdown("#### Step 1: Input Image")
-            st.markdown(
-                f"""
-                <style>
-                .input-image {{
-                    max-width: 300px;  /* Limit the width for the input image in the modal */
-                    max-height: 300px;  /* Limit the height */
-                    object-fit: contain;  /* Ensure the image scales properly */
-                    display: block;
-                    margin: 0 auto;  /* Center the image */
-                }}
-                .image-caption {{
-                    text-align: center;
-                    font-size: 14px;
-                    color: #666;
-                    margin-top: 5px;
-                }}
-                </style>
-                <div>
-                    <img src="data:image/png;base64,{img_data}" class="input-image" />
-                    <div class="image-caption">Input Image</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        with st.spinner("Extracting features..."):
-            time.sleep(2.5)
-
-        # Step 2: Show arrows pointing to feature maps
-        with process_placeholder.container():
-            st.markdown("#### Step 1: Input Image")
-            st.markdown(
-                f"""
-                <style>
-                .input-image {{
-                    max-width: 300px;
-                    max-height: 300px;
-                    object-fit: contain;
-                    display: block;
-                    margin: 0 auto;
-                }}
-                .image-caption {{
-                    text-align: center;
-                    font-size: 14px;
-                    color: #666;
-                    margin-top: 5px;
-                }}
-                </style>
-                <div>
-                    <img src="data:image/png;base64,{img_data}" class="input-image" />
-                    <div class="image-caption">Input Image</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                """
-                <div style="text-align: center;">
-                    <span style="font-size: 24px;">↓</span>
-                    <span style="font-size: 24px; margin-left: 50px;">↓</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("#### Step 2: Feature Extraction")
-            st.write("The input image is passed through an encoder to extract two features: forgery and demographic features.")
-            cols = st.columns(2)
-            with cols[0]:
-                if feature_map1_data:
-                    st.markdown(
-                        f"""
-                        <style>
-                        .feature-image {{
-                            max-width: 200px;  /* Limit the width for feature maps */
-                            max-height: 200px;  /* Limit the height */
-                            object-fit: contain;
-                            display: block;
-                            margin: 0 auto;
-                        }}
-                        .image-caption {{
-                            text-align: center;
-                            font-size: 14px;
-                            color: #666;
-                            margin-top: 5px;
-                        }}
-                        </style>
-                        <div>
-                            <img src="data:image/png;base64,{feature_map1_data}" class="feature-image" />
-                            <div class="image-caption">Forgery Feature</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.write("Placeholder: Forgery Feature")
-            with cols[1]:
-                if feature_map2_data:
-                    st.markdown(
-                        f"""
-                        <style>
-                        .feature-image {{
-                            max-width: 200px;
-                            max-height: 200px;
-                            object-fit: contain;
-                            display: block;
-                            margin: 0 auto;
-                        }}
-                        .image-caption {{
-                            text-align: center;
-                            font-size: 14px;
-                            color: #666;
-                            margin-top: 5px;
-                        }}
-                        </style>
-                        <div>
-                            <img src="data:image/png;base64,{feature_map2_data}" class="feature-image" />
-                            <div class="image-caption">Demographic Feature</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.write("Placeholder: Demographic Feature")
-        with st.spinner("Fusing features..."):
-            time.sleep(2.5)
-
-        # Step 3: Show arrows pointing to combined feature
-        with process_placeholder.container():
-            st.markdown("#### Step 1: Input Image")
-            st.markdown(
-                f"""
-                <style>
-                .input-image {{
-                    max-width: 300px;
-                    max-height: 300px;
-                    object-fit: contain;
-                    display: block;
-                    margin: 0 auto;
-                }}
-                .image-caption {{
-                    text-align: center;
-                    font-size: 14px;
-                    color: #666;
-                    margin-top: 5px;
-                }}
-                </style>
-                <div>
-                    <img src="data:image/png;base64,{img_data}" class="input-image" />
-                    <div class="image-caption">Input Image</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                """
-                <div style="text-align: center;">
-                    <span style="font-size: 24px;">↓</span>
-                    <span style="font-size: 24px; margin-left: 50px;">↓</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("#### Step 2: Feature Extraction")
-            st.write("The input image is passed through an encoder to extract two features: forgery and demographic features.")
-            cols = st.columns(2)
-            with cols[0]:
-                if feature_map1_data:
-                    st.markdown(
-                        f"""
-                        <style>
-                        .feature-image {{
-                            max-width: 200px;
-                            max-height: 200px;
-                            object-fit: contain;
-                            display: block;
-                            margin: 0 auto;
-                        }}
-                        .image-caption {{
-                            text-align: center;
-                            font-size: 14px;
-                            color: #666;
-                            margin-top: 5px;
-                        }}
-                        </style>
-                        <div>
-                            <img src="data:image/png;base64,{feature_map1_data}" class="feature-image" />
-                            <div class="image-caption">Forgery Feature</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.write("Placeholder: Forgery Feature")
-            with cols[1]:
-                if feature_map2_data:
-                    st.markdown(
-                        f"""
-                        <style>
-                        .feature-image {{
-                            max-width: 200px;
-                            max-height: 200px;
-                            object-fit: contain;
-                            display: block;
-                            margin: 0 auto;
-                        }}
-                        .image-caption {{
-                            text-align: center;
-                            font-size: 14px;
-                            color: #666;
-                            margin-top: 5px;
-                        }}
-                        </style>
-                        <div>
-                            <img src="data:image/png;base64,{feature_map2_data}" class="feature-image" />
-                            <div class="image-caption">Demographic Feature</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.write("Placeholder: Demographic Feature")
-            st.markdown(
-                """
-                <div style="text-align: center;">
-                    <span style="font-size: 24px;">↓</span>
-                    <span style="font-size: 24px; margin-left: 50px;">↓</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("#### Step 3: Feature Fusion")
-            st.write("The two features are combined using AdaIN Feature Fusion to create a unified feature representation.")
-            if combined_feature_data:
+    # Pre-convert feature maps, combined feature, and gradcam to base64 for use in the modal
+    feature_map1_data = ""
+    feature_map2_data = ""
+    combined_feature_data = ""
+    gradcam_data = ""
+    
+    feature_map1_path = os.path.join(sample_dir, "feature_map1.png")
+    if os.path.exists(feature_map1_path):
+        with open(feature_map1_path, "rb") as f:
+            feature_map1_data = base64.b64encode(f.read()).decode("utf-8")
+    
+    feature_map2_path = os.path.join(sample_dir, "feature_map2.png")
+    if os.path.exists(feature_map2_path):
+        with open(feature_map2_path, "rb") as f:
+            feature_map2_data = base64.b64encode(f.read()).decode("utf-8")
+    
+    combined_feature_path = os.path.join(sample_dir, "combined_feature.png")
+    if os.path.exists(combined_feature_path):
+        with open(combined_feature_path, "rb") as f:
+            combined_feature_data = base64.b64encode(f.read()).decode("utf-8")
+    
+    gradcam_path = os.path.join(sample_dir, "gradcam.png")
+    if os.path.exists(gradcam_path):
+        with open(gradcam_path, "rb") as f:
+            gradcam_data = base64.b64encode(f.read()).decode("utf-8")
+    
+    if st.button("Want to know how the model detected it?"):
+        modal = Modal("Detection Process Details", key="detection_modal")
+        with modal.container():
+            st.markdown("### How the Model Detects Deepfakes")
+            st.write("Watch the detection process unfold step by step:")
+    
+            # Create a placeholder for the dynamic process
+            process_placeholder = st.empty()
+    
+            # Step 1: Show the input image
+            with process_placeholder.container():
+                st.markdown("#### Step 1: Input Image")
                 st.markdown(
                     f"""
                     <style>
-                    .combined-feature-image {{
-                        max-width: 300px;  /* Limit the width for the combined feature */
+                    .input-image {{
+                        max-width: 300px;  /* Limit the width for the input image in the modal */
                         max-height: 300px;  /* Limit the height */
-                        object-fit: contain;
+                        object-fit: contain;  /* Ensure the image scales properly */
                         display: block;
-                        margin: 0 auto;
+                        margin: 0 auto;  /* Center the image */
                     }}
                     .image-caption {{
                         text-align: center;
@@ -453,128 +221,22 @@ if st.button("Want to know how the model detected it?"):
                     }}
                     </style>
                     <div>
-                        <img src="data:image/png;base64,{combined_feature_data}" class="combined-feature-image" />
-                        <div class="image-caption">Combined Feature</div>
+                        <img src="data:image/png;base64,{img_data}" class="input-image" />
+                        <div class="image-caption">Input Image</div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-            else:
-                st.write("Placeholder: Combined Feature")
-        with st.spinner("Classifying..."):
-            time.sleep(2.5)
-
-        # Step 4: Show arrow pointing to classification result and Grad-CAM
-        with process_placeholder.container():
-            st.markdown("#### Step 1: Input Image")
-            st.markdown(
-                f"""
-                <style>
-                .input-image {{
-                    max-width: 300px;
-                    max-height: 300px;
-                    object-fit: contain;
-                    display: block;
-                    margin: 0 auto;
-                }}
-                .image-caption {{
-                    text-align: center;
-                    font-size: 14px;
-                    color: #666;
-                    margin-top: 5px;
-                }}
-                </style>
-                <div>
-                    <img src="data:image/png;base64,{img_data}" class="input-image" />
-                    <div class="image-caption">Input Image</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                """
-                <div style="text-align: center;">
-                    <span style="font-size: 24px;">↓</span>
-                    <span style="font-size: 24px; margin-left: 50px;">↓</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("#### Step 2: Feature Extraction")
-            st.write("The input image is passed through an encoder to extract two features: forgery and demographic features.")
-            cols = st.columns(2)
-            with cols[0]:
-                if feature_map1_data:
-                    st.markdown(
-                        f"""
-                        <style>
-                        .feature-image {{
-                            max-width rire: 200px;
-                            max-height: 200px;
-                            object-fit: contain;
-                            display: block;
-                            margin: 0 auto;
-                        }}
-                        .image-caption {{
-                            text-align: center;
-                            font-size: 14px;
-                            color: #666;
-                            margin-top: 5px;
-                        }}
-                        </style>
-                        <div>
-                            <img src="data:image/png;base64,{feature_map1_data}" class="feature-image" />
-                            <div class="image-caption">Forgery Feature</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.write("Placeholder: Forgery Feature")
-            with cols[1]:
-                if feature_map2_data:
-                    st.markdown(
-                        f"""
-                        <style>
-                        .feature-image {{
-                            max-width: 200px;
-                            max-height: 200px;
-                            object-fit: contain;
-                            display: block;
-                            margin: 0 auto;
-                        }}
-                        .image-caption {{
-                            text-align: center;
-                            font-size: 14px;
-                            color: #666;
-                            margin-top: 5px;
-                        }}
-                        </style>
-                        <div>
-                            <img src="data:image/png;base64,{feature_map2_data}" class="feature-image" />
-                            <div class="image-caption">Demographic Feature</div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                else:
-                    st.write("Placeholder: Demographic Feature")
-            st.markdown(
-                """
-                <div style="text-align: center;">
-                    <span style="font-size: 24px;">↓</span>
-                    <span style="font-size: 24px; margin-left: 50px;">↓</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("#### Step 3: Feature Fusion")
-            st.write("The two features are combined using AdaIN Feature Fusion to create a unified feature representation.")
-            if combined_feature_data:
+            with st.spinner("Extracting features..."):
+                time.sleep(2.5)
+    
+            # Step 2: Show arrows pointing to feature maps
+            with process_placeholder.container():
+                st.markdown("#### Step 1: Input Image")
                 st.markdown(
                     f"""
                     <style>
-                    .combined-feature-image {{
+                    .input-image {{
                         max-width: 300px;
                         max-height: 300px;
                         object-fit: contain;
@@ -589,32 +251,92 @@ if st.button("Want to know how the model detected it?"):
                     }}
                     </style>
                     <div>
-                        <img src="data:image/png;base64,{combined_feature_data}" class="combined-feature-image" />
-                        <div class="image-caption">Combined Feature</div>
+                        <img src="data:image/png;base64,{img_data}" class="input-image" />
+                        <div class="image-caption">Input Image</div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-            else:
-                st.write("Placeholder: Combined Feature")
-            st.markdown(
-                """
-                <div style="text-align: center;">
-                    <span style="font-size: 24px;">↓</span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("#### Step 4: Classification Head")
-            st.write("The combined feature is fed into a classification head to determine if the image is Fake or Real.")
-            st.subheader(f"Result: {detection_result.upper()}")
-            if gradcam_data:
+                st.markdown(
+                    """
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px;">↓</span>
+                        <span style="font-size: 24px; margin-left: 50px;">↓</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown("#### Step 2: Feature Extraction")
+                st.write("The input image is passed through an encoder to extract two features: forgery and demographic features.")
+                cols = st.columns(2)
+                with cols[0]:
+                    if feature_map1_data:
+                        st.markdown(
+                            f"""
+                            <style>
+                            .feature-image {{
+                                max-width: 200px;  /* Limit the width for feature maps */
+                                max-height: 200px;  /* Limit the height */
+                                object-fit: contain;
+                                display: block;
+                                margin: 0 auto;
+                            }}
+                            .image-caption {{
+                                text-align: center;
+                                font-size: 14px;
+                                color: #666;
+                                margin-top: 5px;
+                            }}
+                            </style>
+                            <div>
+                                <img src="data:image/png;base64,{feature_map1_data}" class="feature-image" />
+                                <div class="image-caption">Forgery Feature</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.write("Placeholder: Forgery Feature")
+                with cols[1]:
+                    if feature_map2_data:
+                        st.markdown(
+                            f"""
+                            <style>
+                            .feature-image {{
+                                max-width: 200px;
+                                max-height: 200px;
+                                object-fit: contain;
+                                display: block;
+                                margin: 0 auto;
+                            }}
+                            .image-caption {{
+                                text-align: center;
+                                font-size: 14px;
+                                color: #666;
+                                margin-top: 5px;
+                            }}
+                            </style>
+                            <div>
+                                <img src="data:image/png;base64,{feature_map2_data}" class="feature-image" />
+                                <div class="image-caption">Demographic Feature</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.write("Placeholder: Demographic Feature")
+            with st.spinner("Fusing features..."):
+                time.sleep(2.5)
+    
+            # Step 3: Show arrows pointing to combined feature
+            with process_placeholder.container():
+                st.markdown("#### Step 1: Input Image")
                 st.markdown(
                     f"""
                     <style>
-                    .gradcam-image {{
-                        max-width: 300px;  /* Limit the width for the Grad-CAM image */
-                        max-height: 300px;  /* Limit the height */
+                    .input-image {{
+                        max-width: 300px;
+                        max-height: 300px;
                         object-fit: contain;
                         display: block;
                         margin: 0 auto;
@@ -627,12 +349,290 @@ if st.button("Want to know how the model detected it?"):
                     }}
                     </style>
                     <div>
-                        <img src="data:image/png;base64,{gradcam_data}" class="gradcam-image" />
-                        <div class="image-caption">Grad-CAM Heatmap</div>
+                        <img src="data:image/png;base64,{img_data}" class="input-image" />
+                        <div class="image-caption">Input Image</div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-                st.write("The Grad-CAM heatmap highlights the regions of the image that influenced the model's decision.")
-            else:
-                st.write("Placeholder: Grad-CAM Heatmap (not available)")
+                st.markdown(
+                    """
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px;">↓</span>
+                        <span style="font-size: 24px; margin-left: 50px;">↓</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown("#### Step 2: Feature Extraction")
+                st.write("The input image is passed through an encoder to extract two features: forgery and demographic features.")
+                cols = st.columns(2)
+                with cols[0]:
+                    if feature_map1_data:
+                        st.markdown(
+                            f"""
+                            <style>
+                            .feature-image {{
+                                max-width: 200px;
+                                max-height: 200px;
+                                object-fit: contain;
+                                display: block;
+                                margin: 0 auto;
+                            }}
+                            .image-caption {{
+                                text-align: center;
+                                font-size: 14px;
+                                color: #666;
+                                margin-top: 5px;
+                            }}
+                            </style>
+                            <div>
+                                <img src="data:image/png;base64,{feature_map1_data}" class="feature-image" />
+                                <div class="image-caption">Forgery Feature</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.write("Placeholder: Forgery Feature")
+                with cols[1]:
+                    if feature_map2_data:
+                        st.markdown(
+                            f"""
+                            <style>
+                            .feature-image {{
+                                max-width: 200px;
+                                max-height: 200px;
+                                object-fit: contain;
+                                display: block;
+                                margin: 0 auto;
+                            }}
+                            .image-caption {{
+                                text-align: center;
+                                font-size: 14px;
+                                color: #666;
+                                margin-top: 5px;
+                            }}
+                            </style>
+                            <div>
+                                <img src="data:image/png;base64,{feature_map2_data}" class="feature-image" />
+                                <div class="image-caption">Demographic Feature</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.write("Placeholder: Demographic Feature")
+                st.markdown(
+                    """
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px;">↓</span>
+                        <span style="font-size: 24px; margin-left: 50px;">↓</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown("#### Step 3: Feature Fusion")
+                st.write("The two features are combined using AdaIN Feature Fusion to create a unified feature representation.")
+                if combined_feature_data:
+                    st.markdown(
+                        f"""
+                        <style>
+                        .combined-feature-image {{
+                            max-width: 300px;  /* Limit the width for the combined feature */
+                            max-height: 300px;  /* Limit the height */
+                            object-fit: contain;
+                            display: block;
+                            margin: 0 auto;
+                        }}
+                        .image-caption {{
+                            text-align: center;
+                            font-size: 14px;
+                            color: #666;
+                            margin-top: 5px;
+                        }}
+                        </style>
+                        <div>
+                            <img src="data:image/png;base64,{combined_feature_data}" class="combined-feature-image" />
+                            <div class="image-caption">Combined Feature</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.write("Placeholder: Combined Feature")
+            with st.spinner("Classifying..."):
+                time.sleep(2.5)
+    
+            # Step 4: Show arrow pointing to classification result and Grad-CAM
+            with process_placeholder.container():
+                st.markdown("#### Step 1: Input Image")
+                st.markdown(
+                    f"""
+                    <style>
+                    .input-image {{
+                        max-width: 300px;
+                        max-height: 300px;
+                        object-fit: contain;
+                        display: block;
+                        margin: 0 auto;
+                    }}
+                    .image-caption {{
+                        text-align: center;
+                        font-size: 14px;
+                        color: #666;
+                        margin-top: 5px;
+                    }}
+                    </style>
+                    <div>
+                        <img src="data:image/png;base64,{img_data}" class="input-image" />
+                        <div class="image-caption">Input Image</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown(
+                    """
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px;">↓</span>
+                        <span style="font-size: 24px; margin-left: 50px;">↓</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown("#### Step 2: Feature Extraction")
+                st.write("The input image is passed through an encoder to extract two features: forgery and demographic features.")
+                cols = st.columns(2)
+                with cols[0]:
+                    if feature_map1_data:
+                        st.markdown(
+                            f"""
+                            <style>
+                            .feature-image {{
+                                max-width rire: 200px;
+                                max-height: 200px;
+                                object-fit: contain;
+                                display: block;
+                                margin: 0 auto;
+                            }}
+                            .image-caption {{
+                                text-align: center;
+                                font-size: 14px;
+                                color: #666;
+                                margin-top: 5px;
+                            }}
+                            </style>
+                            <div>
+                                <img src="data:image/png;base64,{feature_map1_data}" class="feature-image" />
+                                <div class="image-caption">Forgery Feature</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.write("Placeholder: Forgery Feature")
+                with cols[1]:
+                    if feature_map2_data:
+                        st.markdown(
+                            f"""
+                            <style>
+                            .feature-image {{
+                                max-width: 200px;
+                                max-height: 200px;
+                                object-fit: contain;
+                                display: block;
+                                margin: 0 auto;
+                            }}
+                            .image-caption {{
+                                text-align: center;
+                                font-size: 14px;
+                                color: #666;
+                                margin-top: 5px;
+                            }}
+                            </style>
+                            <div>
+                                <img src="data:image/png;base64,{feature_map2_data}" class="feature-image" />
+                                <div class="image-caption">Demographic Feature</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.write("Placeholder: Demographic Feature")
+                st.markdown(
+                    """
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px;">↓</span>
+                        <span style="font-size: 24px; margin-left: 50px;">↓</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown("#### Step 3: Feature Fusion")
+                st.write("The two features are combined using AdaIN Feature Fusion to create a unified feature representation.")
+                if combined_feature_data:
+                    st.markdown(
+                        f"""
+                        <style>
+                        .combined-feature-image {{
+                            max-width: 300px;
+                            max-height: 300px;
+                            object-fit: contain;
+                            display: block;
+                            margin: 0 auto;
+                        }}
+                        .image-caption {{
+                            text-align: center;
+                            font-size: 14px;
+                            color: #666;
+                            margin-top: 5px;
+                        }}
+                        </style>
+                        <div>
+                            <img src="data:image/png;base64,{combined_feature_data}" class="combined-feature-image" />
+                            <div class="image-caption">Combined Feature</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.write("Placeholder: Combined Feature")
+                st.markdown(
+                    """
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px;">↓</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.markdown("#### Step 4: Classification Head")
+                st.write("The combined feature is fed into a classification head to determine if the image is Fake or Real.")
+                st.subheader(f"Result: {detection_result.upper()}")
+                if gradcam_data:
+                    st.markdown(
+                        f"""
+                        <style>
+                        .gradcam-image {{
+                            max-width: 300px;  /* Limit the width for the Grad-CAM image */
+                            max-height: 300px;  /* Limit the height */
+                            object-fit: contain;
+                            display: block;
+                            margin: 0 auto;
+                        }}
+                        .image-caption {{
+                            text-align: center;
+                            font-size: 14px;
+                            color: #666;
+                            margin-top: 5px;
+                        }}
+                        </style>
+                        <div>
+                            <img src="data:image/png;base64,{gradcam_data}" class="gradcam-image" />
+                            <div class="image-caption">Grad-CAM Heatmap</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    st.write("The Grad-CAM heatmap highlights the regions of the image that influenced the model's decision.")
+                else:
+                    st.write("Placeholder: Grad-CAM Heatmap (not available)")
