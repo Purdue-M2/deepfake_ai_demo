@@ -2,9 +2,7 @@ import streamlit as st
 from PIL import Image
 import os
 import time
-import random
 import requests
-from streamlit_lottie import st_lottie
 from streamlit_modal import Modal
 
 # Function to load a Lottie animation from a URL
