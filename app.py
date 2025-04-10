@@ -24,7 +24,7 @@ carousel_images = [
     {"path": "sample_images/physical33.png", "caption": "Physical Failure"},
     {"path": "sample_images/physiological11.png", "caption": "Physiological Failure"},
     {"path": "sample_images/physiological22.png", "caption": "Physiological Failure"},
-    {"path": "sample_images/physiological33.jpg", "caption": "Physiological Failure"},
+    {"path": "sample_images/physiological33.png", "caption": "Physiological Failure"},
     # {"path": "sample_images/progan.png", "caption": "ProGAN"},
     # {"path": "sample_images/sd15.png", "caption": "Stable Diffusion v1.5"},
     # {"path": "sample_images/stargan.png", "caption": "StarGAN"},
