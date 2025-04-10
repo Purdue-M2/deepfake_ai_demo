@@ -19,16 +19,16 @@ st.title("Preserving Fairness Generalization in Deepfake Detection")
 # Image carousel section with right-to-left sliding queue
 st.subheader("Explore Deepfake Detection")
 carousel_images = [
-    {"path": "sample_images/Attgan.png", "caption": "AttGAN"},
-    {"path": "sample_images/Dalle2.png", "caption": "DALLE2"},
-    {"path": "sample_images/ld.png", "caption": " Latent Diffusion"},
-    {"path": "sample_images/mdjourney.png", "caption": "Midjourney"},
-    {"path": "sample_images/msg_gan.png", "caption": "MSGGAN"},
-    {"path": "sample_images/platte.jpg", "caption": "Palette"},
-    {"path": "sample_images/progan.png", "caption": "ProGAN"},
-    {"path": "sample_images/sd15.png", "caption": "Stable Diffusion v1.5"},
-    {"path": "sample_images/stargan.png", "caption": "StarGAN"},
-    {"path": "sample_images/vqgan.jpg", "caption": "VQGAN"},
+    {"path": "sample_images/physical11.png", "caption": "Physical Failure"},
+    {"path": "sample_images/physical22.png", "caption": "Physical Failure"},
+    {"path": "sample_images/physical33.png", "caption": "Physical Failure"},
+    {"path": "sample_images/physiological11.png", "caption": "Physiological Failure"},
+    {"path": "sample_images/physiological22.png", "caption": "Physiological Failure"},
+    {"path": "sample_images/physiological33.jpg", "caption": "Physiological Failure"},
+    # {"path": "sample_images/progan.png", "caption": "ProGAN"},
+    # {"path": "sample_images/sd15.png", "caption": "Stable Diffusion v1.5"},
+    # {"path": "sample_images/stargan.png", "caption": "StarGAN"},
+    # {"path": "sample_images/vqgan.jpg", "caption": "VQGAN"},
 ]  # 10 images for the queue
 
 # Create a directory for sample images if it doesn't exist
